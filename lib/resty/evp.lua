@@ -88,8 +88,10 @@ typedef struct env_md_ctx_st EVP_MD_CTX;
 typedef struct env_md_st EVP_MD;
 typedef struct evp_pkey_ctx_st EVP_PKEY_CTX;
 const EVP_MD *EVP_get_digestbyname(const char *name);
-EVP_MD_CTX *EVP_MD_CTX_create(void);
-void    EVP_MD_CTX_destroy(EVP_MD_CTX *ctx);
+//EVP_MD_CTX *EVP_MD_CTX_create(void);
+EVP_MD_CTX *EVP_MD_CTX_new(void);
+//void    EVP_MD_CTX_destroy(EVP_MD_CTX *ctx);
+void    EVP_MD_CTX_free(EVP_MD_CTX *ctx);
 int     EVP_DigestInit_ex(EVP_MD_CTX *ctx, const EVP_MD *type, ENGINE *impl);
 int     EVP_DigestSignInit(EVP_MD_CTX *ctx, EVP_PKEY_CTX **pctx,
                         const EVP_MD *type, ENGINE *e, EVP_PKEY *pkey);
@@ -157,11 +159,13 @@ function RSASigner.sign(self, message, digest_name)
     local buf = ffi.new("unsigned char[?]", 1024)
     local len = ffi.new("size_t[1]", 1024)
 
-    local ctx = _C.EVP_MD_CTX_create()
+    --local ctx = _C.EVP_MD_CTX_create()
+    local ctx = _C.EVP_MD_CTX_new()
     if not ctx then
         return _err()
     end
-    ffi.gc(ctx, _C.EVP_MD_CTX_destroy)
+    --ffi.gc(ctx, _C.EVP_MD_CTX_destroy)
+    ffi.gc(ctx, _C.EVP_MD_CTX_free)
 
     local md = _C.EVP_get_digestbyname(digest_name)
     if not md then
@@ -213,11 +217,13 @@ function RSAVerifier.verify(self, message, sig, digest_name)
         return _err(false)
     end
 
-    local ctx = _C.EVP_MD_CTX_create()
+    --local ctx = _C.EVP_MD_CTX_create()
+    local ctx = _C.EVP_MD_CTX_new()
     if not ctx then
         return _err(false)
     end
-    ffi.gc(ctx, _C.EVP_MD_CTX_destroy)
+    --ffi.gc(ctx, _C.EVP_MD_CTX_destroy)
+    ffi.gc(ctx, _C.EVP_MD_CTX_free)
 
     if _C.EVP_DigestInit_ex(ctx, md, nil) ~= 1 then
         return _err(false)
